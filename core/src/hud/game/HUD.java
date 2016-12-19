@@ -43,6 +43,7 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
     int nInvY, nInvX;
     int nStamina, nHealth, nThirst, nSanity;
     int nAction;
+    boolean isInvChange = true;
     private Box2DDebugRenderer b2dr;
     private OrthographicCamera camera;
     private World world;
@@ -108,6 +109,8 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         batch.end();
         stage.act();
         stage.draw();
+        InvChange();
+        change();
 
         b2dr.render(world, camera.combined.scl(PPM));
     }
@@ -298,19 +301,43 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
                 nAction = 4;
             }
         });
-        tbInv[0].addListener(new ChangeListener() {
-            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
-                tbInv[0].remove();
-                stage.addActor(tbInv[1]);
-            }
-        });
-        tbInv[1].addListener(new ChangeListener() {
-            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
-                tbInv[1].remove();
-                stage.addActor(tbInv[0]);
-            }
-        });
+            tbInv[0].addListener(new ChangeListener() {
+                public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                    tbInv[0].remove();
+                    stage.addActor(tbInv[1]);
+                    isInvChange = false;
+                }
+            });
+            tbInv[1].addListener(new ChangeListener() {
+                public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                    tbInv[1].remove();
+                    stage.addActor(tbInv[0]);
+                    isInvChange = true;
+                }
+            });
 
+    }
+
+    public void change() {
+        if (isInvChange == false) {
+            tbInv[0].remove();
+            stage.addActor(tbInv[1]);
+        } else if (isInvChange == true) {
+            tbInv[1].remove();
+            stage.addActor(tbInv[0]);
+        }
+    }
+
+    public void InvChange() {
+        if (isInvChange == false) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
+                isInvChange = true;
+            }
+        } else if (isInvChange == true) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
+                isInvChange = false;
+            }
+        }
     }
 
     //Styling for hotbar buttons
@@ -412,5 +439,4 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         SR.rect(35, Gdx.graphics.getHeight() - 105, nSanity, 10);
         SR.end();
     }
-
 }
