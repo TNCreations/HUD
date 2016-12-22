@@ -36,13 +36,14 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
     Stage stage;
     TbsHotbar tbsHotbar;
     TbsGUI tbsGUI;
-    TbGUI tbGUI, tbHotbar[] = new TbGUI[4], tbInv[] = new TbGUI[2];
+    TbGUI tbGUI, tbHotbar[] = new TbGUI[4], tbInv[] = new TbGUI[2], tbItems[] = new TbGUI[5];
     float PPM = 32;
     float fSpeed;
     float fInvPosX, fInvPosY;
-    int nInvY, nInvX;
+    int nInvY, nInvX, nItemY, nItemX;
     int nStamina, nHealth, nThirst, nSanity;
     int nAction;
+    int nItemNum[] = new int[5];
     boolean isInvChange = true;
     private Box2DDebugRenderer b2dr;
     private OrthographicCamera camera;
@@ -51,6 +52,8 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
     InputMultiplexer multiplexer;
     ShapeRenderer SR;
     boolean isStaminaBuffer = false;
+    BitmapFont font;
+    String sItem[] = new String[5];
 
     @Override
     public void create() {
@@ -60,10 +63,17 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         nHScreen = Gdx.graphics.getHeight();
         batch = new SpriteBatch();
         SR = new ShapeRenderer();
+        font = new BitmapFont();
         nStamina = 200;
         nHealth = 200;
         nThirst = 100;
         nSanity = 100;
+        
+        sItem[0] = "stone";
+        sItem[1] = "wood";
+        sItem[2] = "iron";
+        sItem[3] = "gold";
+        sItem[4] = "diamond";
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, nWScreen / 2, nHScreen / 2);
@@ -78,12 +88,31 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         tbsHotbar = new TbsHotbar();
         nInvY = Gdx.graphics.getHeight() / 2 - 128;
         nInvX = Gdx.graphics.getWidth() - 64;
+        nItemY = 198;
+        nItemX = 30;
+        nItemNum[0] = 1;
+        nItemNum[1] = 1;
+        nItemNum[2] = 1;
+        nItemNum[3] = 1;
+        nItemNum[4] = 1;
+
         for (int i = 0; i < 4; i++) {
             tbHotbar[i] = new TbGUI("", tbsHotbar, 64, 64);
             tbHotbar[i].setY(nInvY);
             tbHotbar[i].setX(nInvX);
             nInvY += 64;
             stage.addActor(tbHotbar[i]);
+        }
+        for(int i = 0; i < 5; i++) {
+            tbsGUI = new TbsGUI(sItem[i]);
+            tbItems[i] = new TbGUI(sItem[i] + " x " + nItemNum[i], tbsGUI, 32, 32);
+            tbItems[i].setY(nItemY);
+            tbItems[i].setX(nItemX);
+            nItemY-=64;
+            if(i == 3) {
+                nItemX+=90;
+                nItemY = 198;
+            }
         }
 
         setupGUI();
@@ -105,6 +134,19 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         statsBars();
         batch.begin();
+        if(!isInvChange) {
+            for(int i = 0; i < 5; i++) {
+                if(nItemNum[i] > 0) {
+                    stage.addActor(tbItems[i]);
+                }
+            }
+        } else if(isInvChange) {
+            for(int i = 0; i < 5; i++) {
+                if(nItemNum[i] > 0) {
+                    tbItems[i].remove();
+                }
+            }
+        }
         batch.setProjectionMatrix(camera.combined);
         batch.end();
         stage.act();
@@ -394,7 +436,7 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
     public void setupGUI() {
 
         tbsGUI = new TbsGUI("inventory");
-        tbInv[1] = new TbGUI(null, tbsGUI, 200, 262);
+        tbInv[1] = new TbGUI("", tbsGUI, 200, 262);
 
         tbsGUI = new TbsGUI("bag");
         tbInv[0] = new TbGUI("Inventory", tbsGUI, 64, 64);
