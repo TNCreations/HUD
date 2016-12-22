@@ -90,11 +90,11 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         nInvX = Gdx.graphics.getWidth() - 64;
         nItemY = 198;
         nItemX = 30;
-        nItemNum[0] = 1;
-        nItemNum[1] = 1;
-        nItemNum[2] = 1;
-        nItemNum[3] = 1;
-        nItemNum[4] = 1;
+        nItemNum[0] = 1; //Stone
+        nItemNum[1] = 1; //Wood
+        nItemNum[2] = 1; //Iron
+        nItemNum[3] = 1; //Gold
+        nItemNum[4] = 1; //Diamond
 
         for (int i = 0; i < 4; i++) {
             tbHotbar[i] = new TbGUI("", tbsHotbar, 64, 64);
@@ -133,8 +133,7 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         statsBars();
-        batch.begin();
-        if(!isInvChange) {
+                if(!isInvChange) {
             for(int i = 0; i < 5; i++) {
                 if(nItemNum[i] > 0) {
                     stage.addActor(tbItems[i]);
@@ -147,6 +146,7 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
                 }
             }
         }
+        batch.begin();
         batch.setProjectionMatrix(camera.combined);
         batch.end();
         stage.act();
