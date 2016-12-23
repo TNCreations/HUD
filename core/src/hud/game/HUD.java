@@ -54,6 +54,7 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
     boolean isStaminaBuffer = false;
     BitmapFont font;
     String sItem[] = new String[5];
+    String sIcon[] = new String[4];
 
     @Override
     public void create() {
@@ -68,12 +69,17 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         nHealth = 200;
         nThirst = 100;
         nSanity = 100;
-        
+
         sItem[0] = "stone";
         sItem[1] = "wood";
         sItem[2] = "iron";
         sItem[3] = "gold";
         sItem[4] = "diamond";
+        
+        sIcon[0] = "invIconSword";
+        sIcon[1] = "invIconPick";
+        sIcon[2] = "invIconAxe";
+        sIcon[3] = "invIconHam";
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, nWScreen / 2, nHScreen / 2);
@@ -85,7 +91,6 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         platform = createBox(0, 0, 64, 32, true);
 
         stage = new Stage();
-        tbsHotbar = new TbsHotbar();
         nInvY = Gdx.graphics.getHeight() / 2 - 128;
         nInvX = Gdx.graphics.getWidth() - 64;
         nItemY = 198;
@@ -97,20 +102,21 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         nItemNum[4] = 1; //Diamond
 
         for (int i = 0; i < 4; i++) {
+            tbsHotbar = new TbsHotbar(sIcon[i]);
             tbHotbar[i] = new TbGUI("", tbsHotbar, 64, 64);
             tbHotbar[i].setY(nInvY);
             tbHotbar[i].setX(nInvX);
             nInvY += 64;
             stage.addActor(tbHotbar[i]);
         }
-        for(int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; i++) {
             tbsGUI = new TbsGUI(sItem[i]);
             tbItems[i] = new TbGUI(sItem[i] + " x " + nItemNum[i], tbsGUI, 32, 32);
             tbItems[i].setY(nItemY);
             tbItems[i].setX(nItemX);
-            nItemY-=64;
-            if(i == 3) {
-                nItemX+=90;
+            nItemY -= 64;
+            if (i == 3) {
+                nItemX += 90;
                 nItemY = 198;
             }
         }
@@ -133,15 +139,15 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         statsBars();
-                if(!isInvChange) {
-            for(int i = 0; i < 5; i++) {
-                if(nItemNum[i] > 0) {
+        if (!isInvChange) {
+            for (int i = 0; i < 5; i++) {
+                if (nItemNum[i] > 0) {
                     stage.addActor(tbItems[i]);
                 }
             }
-        } else if(isInvChange) {
-            for(int i = 0; i < 5; i++) {
-                if(nItemNum[i] > 0) {
+        } else if (isInvChange) {
+            for (int i = 0; i < 5; i++) {
+                if (nItemNum[i] > 0) {
                     tbItems[i].remove();
                 }
             }
@@ -343,20 +349,20 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
                 nAction = 4;
             }
         });
-            tbInv[0].addListener(new ChangeListener() {
-                public void changed(ChangeListener.ChangeEvent event, Actor actor) {
-                    tbInv[0].remove();
-                    stage.addActor(tbInv[1]);
-                    isInvChange = false;
-                }
-            });
-            tbInv[1].addListener(new ChangeListener() {
-                public void changed(ChangeListener.ChangeEvent event, Actor actor) {
-                    tbInv[1].remove();
-                    stage.addActor(tbInv[0]);
-                    isInvChange = true;
-                }
-            });
+        tbInv[0].addListener(new ChangeListener() {
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                tbInv[0].remove();
+                stage.addActor(tbInv[1]);
+                isInvChange = false;
+            }
+        });
+        tbInv[1].addListener(new ChangeListener() {
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                tbInv[1].remove();
+                stage.addActor(tbInv[0]);
+                isInvChange = true;
+            }
+        });
 
     }
 
@@ -388,15 +394,16 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         Skin skin = new Skin();
         TextureAtlas buttonAtlas;
 
-        public TbsHotbar() {
+        public TbsHotbar(String sIcon) {
             BitmapFont font = new BitmapFont();
             skin.add("default", font);
             buttonAtlas = new TextureAtlas(Gdx.files.internal("gameAssets.atlas"));
             skin.addRegions(buttonAtlas);
 
-            this.up = skin.getDrawable("inventoryIcon");
-            this.down = skin.getDrawable("inventoryIconPressed");
-            this.over = skin.getDrawable("inventoryIconHover");
+            this.up = skin.getDrawable(sIcon);
+            this.down = skin.getDrawable(sIcon + "Pressed");
+            this.over = skin.getDrawable(sIcon + "Hover");
+            this.checked = skin.getDrawable("inventoryIcon");
             this.font = skin.getFont("default");
         }
     }
