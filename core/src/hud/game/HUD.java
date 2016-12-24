@@ -36,7 +36,8 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
     Stage stage;
     TbsHotbar tbsHotbar;
     TbsGUI tbsGUI;
-    TbGUI tbGUI, tbHotbar[] = new TbGUI[4], tbInv[] = new TbGUI[2], tbItems[] = new TbGUI[5];
+    TbGUI tbGUI, tbHotbar[] = new TbGUI[4], tbInv[] = new TbGUI[2], tbItems[] = new TbGUI[5],
+            tbJournal[] = new TbGUI[2];
     float PPM = 32;
     float fSpeed;
     float fInvPosX, fInvPosY;
@@ -44,7 +45,8 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
     int nStamina, nHealth, nThirst, nSanity;
     int nAction;
     int nItemNum[] = new int[5];
-    boolean isInvChange = true;
+    boolean isInvOpen = false;
+    boolean isJournalOpen = false;
     private Box2DDebugRenderer b2dr;
     private OrthographicCamera camera;
     private World world;
@@ -55,6 +57,7 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
     BitmapFont font;
     String sItem[] = new String[5];
     String sIcon[] = new String[4];
+    int nDoubleClick = 0;
 
     @Override
     public void create() {
@@ -75,7 +78,7 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         sItem[2] = "iron";
         sItem[3] = "gold";
         sItem[4] = "diamond";
-        
+
         sIcon[0] = "invIconSword";
         sIcon[1] = "invIconPick";
         sIcon[2] = "invIconAxe";
@@ -139,13 +142,13 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         statsBars();
-        if (!isInvChange) {
+        if (isInvOpen) {
             for (int i = 0; i < 5; i++) {
                 if (nItemNum[i] > 0) {
                     stage.addActor(tbItems[i]);
                 }
             }
-        } else if (isInvChange) {
+        } else if (!isInvOpen) {
             for (int i = 0; i < 5; i++) {
                 if (nItemNum[i] > 0) {
                     tbItems[i].remove();
@@ -157,8 +160,8 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         batch.end();
         stage.act();
         stage.draw();
-        InvChange();
-        change();
+        InvOpen();
+        JournalOpen();
 
         b2dr.render(world, camera.combined.scl(PPM));
     }
@@ -202,6 +205,9 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
         }
         if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
             nAction = 0;
+            for (int i = 0; i < 4; i++) {
+                tbHotbar[i].setChecked(false);
+            }
         }
         if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
 
@@ -329,18 +335,26 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 System.out.println("Sword");
                 nAction = 1;
+                tbHotbar[1].setChecked(false);
+                tbHotbar[2].setChecked(false);
+                tbHotbar[3].setChecked(false);
+
             }
         });
         tbHotbar[1].addListener(new ChangeListener() {
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 System.out.println("Pickaxe");
                 nAction = 2;
+                tbHotbar[0].setChecked(false);
+                tbHotbar[2].setChecked(false);
+                tbHotbar[3].setChecked(false);
             }
         });
         tbHotbar[2].addListener(new ChangeListener() {
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 System.out.println("Axe");
                 nAction = 3;
+                
             }
         });
         tbHotbar[3].addListener(new ChangeListener() {
@@ -353,39 +367,71 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 tbInv[0].remove();
                 stage.addActor(tbInv[1]);
-                isInvChange = false;
+                isInvOpen = true;
+                isJournalOpen = false;
             }
         });
         tbInv[1].addListener(new ChangeListener() {
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 tbInv[1].remove();
                 stage.addActor(tbInv[0]);
-                isInvChange = true;
+                isInvOpen = false;
+            }
+        });
+        tbJournal[0].addListener(new ChangeListener() {
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                tbJournal[0].remove();
+                stage.addActor(tbJournal[1]);
+                isJournalOpen = true;
+                isInvOpen = false;
+            }
+        });
+        tbJournal[1].addListener(new ChangeListener() {
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                tbJournal[1].remove();
+                stage.addActor(tbJournal[0]);
+                isJournalOpen = false;
             }
         });
 
     }
 
-    public void change() {
-        if (isInvChange == false) {
+    public void InvOpen() {
+        if (isInvOpen) {
             tbInv[0].remove();
+            tbJournal[0].setX(200);
             stage.addActor(tbInv[1]);
-        } else if (isInvChange == true) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
+                isInvOpen = false;
+            }
+        } else if (isInvOpen == false) {
             tbInv[1].remove();
+            tbJournal[0].setX(64);
             stage.addActor(tbInv[0]);
+            if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
+                isInvOpen = true;
+                isJournalOpen = false;
+            }
+        }
+        if (isJournalOpen) {
+            tbJournal[0].remove();
+            tbInv[0].setX(200);
+            stage.addActor(tbJournal[1]);
+            if (Gdx.input.isKeyJustPressed(Input.Keys.J)) {
+                isJournalOpen = false;
+            }
+        } else if (!isJournalOpen) {
+            tbJournal[1].remove();
+            tbInv[0].setX(0);
+            stage.addActor(tbJournal[0]);
+            if (Gdx.input.isKeyJustPressed(Input.Keys.J)) {
+                isJournalOpen = true;
+                isInvOpen = false;
+            }
         }
     }
 
-    public void InvChange() {
-        if (isInvChange == false) {
-            if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
-                isInvChange = true;
-            }
-        } else if (isInvChange == true) {
-            if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
-                isInvChange = false;
-            }
-        }
+    public void JournalOpen() {
     }
 
     //Styling for hotbar buttons
@@ -403,7 +449,7 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
             this.up = skin.getDrawable(sIcon);
             this.down = skin.getDrawable(sIcon + "Pressed");
             this.over = skin.getDrawable(sIcon + "Hover");
-            this.checked = skin.getDrawable("inventoryIcon");
+            //this.checked = skin.getDrawable("inventoryIcon");
             this.font = skin.getFont("default");
         }
     }
@@ -434,7 +480,7 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
             this.setSize(nW, nH);
             this.addListener(new ClickListener() {
                 public void clicked(InputEvent e, float x, float y) {
-                    //System.out.println("clicked");
+
                 }
             });
         }
@@ -442,8 +488,16 @@ public class HUD extends ApplicationAdapter implements InputProcessor {
 
     public void setupGUI() {
 
-        tbsGUI = new TbsGUI("inventory");
+        tbsGUI = new TbsGUI("itemInventory");
         tbInv[1] = new TbGUI("", tbsGUI, 200, 262);
+
+        tbsGUI = new TbsGUI("journalInventory");
+        tbJournal[1] = new TbGUI("Days survived: \n\nTime played: \n\nItems Collected: ", tbsGUI, 200, 262);
+
+        tbsGUI = new TbsGUI("Journal");
+        tbJournal[0] = new TbGUI("Journal", tbsGUI, 64, 64);
+        tbJournal[0].setX(64);
+        stage.addActor(tbJournal[0]);
 
         tbsGUI = new TbsGUI("bag");
         tbInv[0] = new TbGUI("Inventory", tbsGUI, 64, 64);
